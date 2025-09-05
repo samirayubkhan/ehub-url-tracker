@@ -33,24 +33,23 @@ export default async function handler(req, res) {
       return acc;
     }, {});
 
-    // Get recent clicks (last 24 hours)
+    // Get recent clicks count (last 24 hours) efficiently
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const { data: recentClicks, error: recentError } = await supabase
+    const { count: recentClicksCount, error: recentError } = await supabase
       .from('clicks')
-      .select('*')
-      .gte('clicked_at', yesterday.toISOString())
-      .order('clicked_at', { ascending: false });
+      .select('*', { count: 'exact', head: true })
+      .gte('clicked_at', yesterday.toISOString());
 
     if (recentError) {
-      console.error('Error fetching recent clicks:', recentError);
+      console.error('Error fetching recent clicks count:', recentError);
     }
 
     res.status(200).json({
       totalClicks,
       channelCounts,
-      recentClicks: recentClicks || [],
+      recentClicks: recentClicksCount || 0,
       lastUpdated: new Date().toISOString()
     });
 

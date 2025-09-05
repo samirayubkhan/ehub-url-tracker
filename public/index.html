@@ -262,7 +262,7 @@
                 // Update metrics
                 document.getElementById('totalClicks').textContent = data.totalClicks || 0;
                 document.getElementById('channelCount').textContent = Object.keys(data.channelCounts || {}).length;
-                document.getElementById('recentClicks').textContent = data.recentClicks?.length || 0;
+                document.getElementById('recentClicks').textContent = data.recentClicks || 0;
                 
                 // Update channel stats
                 const channelStatsDiv = document.getElementById('channelStats');
