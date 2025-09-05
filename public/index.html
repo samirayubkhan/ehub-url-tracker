@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eHub URL Tracker Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        .channel-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .channel-item:last-child {
+            border-bottom: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .refresh-btn {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .refresh-btn:hover {
+            background: #1d4ed8;
+        }
+        .last-updated {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>eHub URL Tracker Dashboard</h1>
+        <p>Track clicks for your ALX eHub migration URLs</p>
+        <button class="refresh-btn" onclick="loadStats()">Refresh Data</button>
+        <span class="last-updated" id="lastUpdated"></span>
+    </div>
+
+    <div id="loading" class="loading">
+        Loading statistics...
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <div id="dashboard" style="display: none;">
+        <div class="stats-grid">
+            <div class="card">
+                <div class="metric" id="totalClicks">0</div>
+                <div class="metric-label">Total Clicks</div>
+            </div>
+            <div class="card">
+                <div class="metric" id="channelCount">0</div>
+                <div class="metric-label">Active Channels</div>
+            </div>
+            <div class="card">
+                <div class="metric" id="recentClicks">0</div>
+                <div class="metric-label">Clicks (Last 24h)</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Clicks by Channel</h3>
+            <div id="channelStats">
+                <div class="loading">No data available</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Your Tracking URLs</h3>
+            <p>Use these URLs to track different traffic sources:</p>
+            <div style="font-family: monospace; background: #f1f5f9; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                <div style="margin: 5px 0;"><strong>Home Banner:</strong> <span id="homeBannerUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>Announcement Post:</strong> <span id="announcementUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>DM 1:</strong> <span id="dm1Url">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>DM 2:</strong> <span id="dm2Url">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>DM 3:</strong> <span id="dm3Url">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>Channel Banner:</strong> <span id="channelBannerUrl">Loading...</span></div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <div style="margin: 5px 0;"><strong>WhatsApp - Lagos:</strong> <span id="whatsappLagosUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Johannesburg:</strong> <span id="whatsappJohannesburgUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Kigali:</strong> <span id="whatsappKigaliUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Nairobi:</strong> <span id="whatsappNairobiUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Casablanca:</strong> <span id="whatsappCasablancaUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Cairo:</strong> <span id="whatsappCairoUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Addis Ababa:</strong> <span id="whatsappAddisAbabaUrl">Loading...</span></div>
+                <div style="margin: 5px 0;"><strong>WhatsApp - Accra:</strong> <span id="whatsappAccraUrl">Loading...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let baseUrl = '';
+        
+        function initializeUrls() {
+            baseUrl = window.location.origin;
+            // Main tracking URLs
+            document.getElementById('homeBannerUrl').textContent = `${baseUrl}/api/track?utm=home-banner`;
+            document.getElementById('announcementUrl').textContent = `${baseUrl}/api/track?utm=announcement-post`;
+            document.getElementById('dm1Url').textContent = `${baseUrl}/api/track?utm=dm-1`;
+            document.getElementById('dm2Url').textContent = `${baseUrl}/api/track?utm=dm-2`;
+            document.getElementById('dm3Url').textContent = `${baseUrl}/api/track?utm=dm-3`;
+            document.getElementById('channelBannerUrl').textContent = `${baseUrl}/api/track?utm=channel-banner`;
+            
+            // WhatsApp city-specific URLs
+            document.getElementById('whatsappLagosUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-lagos`;
+            document.getElementById('whatsappJohannesburgUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-johannesburg`;
+            document.getElementById('whatsappKigaliUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-kigali`;
+            document.getElementById('whatsappNairobiUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-nairobi`;
+            document.getElementById('whatsappCasablancaUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-casablanca`;
+            document.getElementById('whatsappCairoUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-cairo`;
+            document.getElementById('whatsappAddisAbabaUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-addis-ababa`;
+            document.getElementById('whatsappAccraUrl').textContent = `${baseUrl}/api/track?utm=whatsapp-accra`;
+        }
+
+        async function loadStats() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
+                
+                const response = await fetch('/api/stats');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('totalClicks').textContent = data.totalClicks || 0;
+                document.getElementById('channelCount').textContent = Object.keys(data.channelCounts || {}).length;
+                document.getElementById('recentClicks').textContent = data.recentClicks?.length || 0;
+                
+                // Update channel stats
+                const channelStatsDiv = document.getElementById('channelStats');
+                if (Object.keys(data.channelCounts || {}).length === 0) {
+                    channelStatsDiv.innerHTML = '<div class="loading">No clicks recorded yet</div>';
+                } else {
+                    const sortedChannels = Object.entries(data.channelCounts)
+                        .sort(([,a], [,b]) => b - a);
+                    
+                    channelStatsDiv.innerHTML = sortedChannels
+                        .map(([channel, count]) => `
+                            <div class="channel-item">
+                                <span><strong>${channel}</strong></span>
+                                <span>${count} clicks</span>
+                            </div>
+                        `).join('');
+                }
+                
+                // Update last updated time
+                const lastUpdated = new Date(data.lastUpdated).toLocaleString();
+                document.getElementById('lastUpdated').textContent = `Last updated: ${lastUpdated}`;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Error loading data: ${error.message}`;
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeUrls();
+            loadStats();
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>

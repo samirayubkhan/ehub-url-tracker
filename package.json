@@ -1,0 +1,14 @@
+{
+  "name": "ehub-url-tracker-alx",
+  "version": "1.0.0",
+  "description": "Simple URL tracker for ALX eHub migration",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
