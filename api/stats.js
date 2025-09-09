@@ -16,22 +16,55 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to fetch total clicks count' });
     }
 
-    // Get click statistics grouped by channel with higher limit
-    const { data: channelStats, error: channelError } = await supabase
-      .from('clicks')
-      .select('channel')
-      .order('clicked_at', { ascending: false })
-      .limit(10000); // Set a higher limit to get all records
+    // Get click statistics grouped by channel using RPC function for better performance
+    const { data: channelCountsData, error: channelError } = await supabase
+      .rpc('get_channel_counts');
+
+    let channelCounts = {};
 
     if (channelError) {
-      return res.status(500).json({ error: 'Failed to fetch channel stats' });
-    }
+      console.error('Error with RPC call, falling back to direct query:', channelError);
+      
+      // Fallback: Get all channel data by paginating through all records
+      let allChannelData = [];
+      let from = 0;
+      const pageSize = 1000;
+      
+      while (true) {
+        const { data: pageData, error: pageError } = await supabase
+          .from('clicks')
+          .select('channel')
+          .range(from, from + pageSize - 1);
 
-    // Count clicks per channel
-    const channelCounts = channelStats.reduce((acc, click) => {
-      acc[click.channel] = (acc[click.channel] || 0) + 1;
-      return acc;
-    }, {});
+        if (pageError) {
+          return res.status(500).json({ error: 'Failed to fetch channel stats' });
+        }
+
+        if (!pageData || pageData.length === 0) {
+          break; // No more data
+        }
+
+        allChannelData = allChannelData.concat(pageData);
+        
+        if (pageData.length < pageSize) {
+          break; // Last page
+        }
+        
+        from += pageSize;
+      }
+
+      // Count clicks per channel from all data
+      channelCounts = allChannelData.reduce((acc, click) => {
+        acc[click.channel] = (acc[click.channel] || 0) + 1;
+        return acc;
+      }, {});
+    } else {
+      // Convert RPC result to object format
+      channelCounts = channelCountsData.reduce((acc, row) => {
+        acc[row.channel] = parseInt(row.count);
+        return acc;
+      }, {});
+    }
 
     // Get recent clicks count (last 24 hours) efficiently
     const yesterday = new Date();
@@ -48,7 +81,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       totalClicks,
-      channelCounts,
+      channelCounts: channelCounts || {},
       recentClicks: recentClicksCount || 0,
       lastUpdated: new Date().toISOString()
     });
