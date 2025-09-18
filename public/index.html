@@ -121,16 +121,7 @@
 
         <div class="card">
             <h3>Your Tracking URLs</h3>
-            <p>Use these URLs to track different traffic sources. Choose between short URLs (better for WhatsApp) or long URLs (more descriptive):</p>
-            
-            <div style="margin: 20px 0;">
-                <label style="margin-right: 15px;">
-                    <input type="radio" name="urlType" value="short" checked onchange="toggleUrlDisplay()"> Short URLs (Recommended for WhatsApp)
-                </label>
-                <label>
-                    <input type="radio" name="urlType" value="long" onchange="toggleUrlDisplay()"> Long URLs (Descriptive)
-                </label>
-            </div>
+            <p>Use these URLs to track different traffic sources:</p>
             
             <div style="font-family: monospace; background: #f1f5f9; padding: 15px; border-radius: 6px; margin-top: 10px;">
                 <div style="margin: 5px 0;"><strong>Home Banner:</strong> <span id="homeBannerUrl">Loading...</span></div>
@@ -159,91 +150,44 @@
         async function initializeUrls() {
             baseUrl = window.location.origin;
             
-            // Store both short and long URL options
+            // Store only long URL options
             urlMappings = {
-                'home-banner': {
-                    short: `${baseUrl}/s/hb`,
-                    long: `${baseUrl}/api/track?utm=home-banner`
-                },
-                'announcement-post': {
-                    short: `${baseUrl}/s/ap`,
-                    long: `${baseUrl}/api/track?utm=announcement-post`
-                },
-                'dm-1': {
-                    short: `${baseUrl}/s/d1`,
-                    long: `${baseUrl}/api/track?utm=dm-1`
-                },
-                'dm-2': {
-                    short: `${baseUrl}/s/d2`,
-                    long: `${baseUrl}/api/track?utm=dm-2`
-                },
-                'dm-3': {
-                    short: `${baseUrl}/s/d3`,
-                    long: `${baseUrl}/api/track?utm=dm-3`
-                },
-                'channel-banner': {
-                    short: `${baseUrl}/s/cb`,
-                    long: `${baseUrl}/api/track?utm=channel-banner`
-                },
-                'whatsapp-lagos': {
-                    short: `${baseUrl}/s/wl`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-lagos`
-                },
-                'whatsapp-johannesburg': {
-                    short: `${baseUrl}/s/wj`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-johannesburg`
-                },
-                'whatsapp-kigali': {
-                    short: `${baseUrl}/s/wk`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-kigali`
-                },
-                'whatsapp-nairobi': {
-                    short: `${baseUrl}/s/wn`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-nairobi`
-                },
-                'whatsapp-casablanca': {
-                    short: `${baseUrl}/s/wc`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-casablanca`
-                },
-                'whatsapp-cairo': {
-                    short: `${baseUrl}/s/we`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-cairo`
-                },
-                'whatsapp-addis-ababa': {
-                    short: `${baseUrl}/s/wa`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-addis-ababa`
-                },
-                'whatsapp-accra': {
-                    short: `${baseUrl}/s/wg`,
-                    long: `${baseUrl}/api/track?utm=whatsapp-accra`
-                }
+                'home-banner': `${baseUrl}/api/track?utm=home-banner`,
+                'announcement-post': `${baseUrl}/api/track?utm=announcement-post`,
+                'dm-1': `${baseUrl}/api/track?utm=dm-1`,
+                'dm-2': `${baseUrl}/api/track?utm=dm-2`,
+                'dm-3': `${baseUrl}/api/track?utm=dm-3`,
+                'channel-banner': `${baseUrl}/api/track?utm=channel-banner`,
+                'whatsapp-lagos': `${baseUrl}/api/track?utm=whatsapp-lagos`,
+                'whatsapp-johannesburg': `${baseUrl}/api/track?utm=whatsapp-johannesburg`,
+                'whatsapp-kigali': `${baseUrl}/api/track?utm=whatsapp-kigali`,
+                'whatsapp-nairobi': `${baseUrl}/api/track?utm=whatsapp-nairobi`,
+                'whatsapp-casablanca': `${baseUrl}/api/track?utm=whatsapp-casablanca`,
+                'whatsapp-cairo': `${baseUrl}/api/track?utm=whatsapp-cairo`,
+                'whatsapp-addis-ababa': `${baseUrl}/api/track?utm=whatsapp-addis-ababa`,
+                'whatsapp-accra': `${baseUrl}/api/track?utm=whatsapp-accra`
             };
             
-            // Display short URLs by default
-            updateUrlDisplay('short');
+            // Display URLs
+            updateUrlDisplay();
         }
         
-        function toggleUrlDisplay() {
-            const selectedType = document.querySelector('input[name="urlType"]:checked').value;
-            updateUrlDisplay(selectedType);
-        }
-        
-        function updateUrlDisplay(urlType) {
-            document.getElementById('homeBannerUrl').textContent = urlMappings['home-banner'][urlType];
-            document.getElementById('announcementUrl').textContent = urlMappings['announcement-post'][urlType];
-            document.getElementById('dm1Url').textContent = urlMappings['dm-1'][urlType];
-            document.getElementById('dm2Url').textContent = urlMappings['dm-2'][urlType];
-            document.getElementById('dm3Url').textContent = urlMappings['dm-3'][urlType];
-            document.getElementById('channelBannerUrl').textContent = urlMappings['channel-banner'][urlType];
+        function updateUrlDisplay() {
+            document.getElementById('homeBannerUrl').textContent = urlMappings['home-banner'];
+            document.getElementById('announcementUrl').textContent = urlMappings['announcement-post'];
+            document.getElementById('dm1Url').textContent = urlMappings['dm-1'];
+            document.getElementById('dm2Url').textContent = urlMappings['dm-2'];
+            document.getElementById('dm3Url').textContent = urlMappings['dm-3'];
+            document.getElementById('channelBannerUrl').textContent = urlMappings['channel-banner'];
             
-            document.getElementById('whatsappLagosUrl').textContent = urlMappings['whatsapp-lagos'][urlType];
-            document.getElementById('whatsappJohannesburgUrl').textContent = urlMappings['whatsapp-johannesburg'][urlType];
-            document.getElementById('whatsappKigaliUrl').textContent = urlMappings['whatsapp-kigali'][urlType];
-            document.getElementById('whatsappNairobiUrl').textContent = urlMappings['whatsapp-nairobi'][urlType];
-            document.getElementById('whatsappCasablancaUrl').textContent = urlMappings['whatsapp-casablanca'][urlType];
-            document.getElementById('whatsappCairoUrl').textContent = urlMappings['whatsapp-cairo'][urlType];
-            document.getElementById('whatsappAddisAbabaUrl').textContent = urlMappings['whatsapp-addis-ababa'][urlType];
-            document.getElementById('whatsappAccraUrl').textContent = urlMappings['whatsapp-accra'][urlType];
+            document.getElementById('whatsappLagosUrl').textContent = urlMappings['whatsapp-lagos'];
+            document.getElementById('whatsappJohannesburgUrl').textContent = urlMappings['whatsapp-johannesburg'];
+            document.getElementById('whatsappKigaliUrl').textContent = urlMappings['whatsapp-kigali'];
+            document.getElementById('whatsappNairobiUrl').textContent = urlMappings['whatsapp-nairobi'];
+            document.getElementById('whatsappCasablancaUrl').textContent = urlMappings['whatsapp-casablanca'];
+            document.getElementById('whatsappCairoUrl').textContent = urlMappings['whatsapp-cairo'];
+            document.getElementById('whatsappAddisAbabaUrl').textContent = urlMappings['whatsapp-addis-ababa'];
+            document.getElementById('whatsappAccraUrl').textContent = urlMappings['whatsapp-accra'];
         }
 
         async function loadStats() {
